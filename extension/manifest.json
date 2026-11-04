@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Thread Backup",
+  "version": "0.1.0",
+  "description": "Keeps a copy of your ChatGPT and Claude chats in your Thread for 10 days, so a deleted chat isn't gone forever.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://chatgpt.com/*", "https://claude.ai/*", "https://*.fly.dev/*",
+                       "http://127.0.0.1/*", "http://localhost/*"],
+  "optional_host_permissions": ["https://*/*"],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [{ "matches": ["https://chatgpt.com/*", "https://claude.ai/*"], "js": ["content.js"],
+                        "run_at": "document_idle" }],
+  "action": { "default_popup": "popup.html", "default_title": "Thread Backup" },
+  "icons": { "128": "icon.png" }
+}

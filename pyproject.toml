@@ -1,0 +1,35 @@
+[project]
+name = "thread"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "Yue Chen" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "cryptography>=50.0.1",
+    "google-api-python-client>=2.200.0",
+    "google-auth-oauthlib>=1.4.1",
+    "httpx>=0.28.1",
+    "mcp[cli]>=2.2.0",
+    "pypdf>=6.21.1",
+    "segno>=1.6.6",
+    "starlette>=1.7.0",
+    "uvicorn>=0.54.0",
+]
+
+[project.scripts]
+thread = "thread:main"
+thread-google-login = "thread.gcal:login"
+thread-home = "thread.home:main"
+thread-online = "thread.server:main_online"
+thread-admin = "thread.accounts:admin_cli"
+
+[build-system]
+requires = ["uv_build>=0.12.19,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

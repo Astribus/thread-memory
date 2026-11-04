@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f6f3">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>Thread</title>
+<script>
+  // Apply the saved theme before anything draws, so dark mode never flashes white.
+  try { const t = localStorage.getItem("thread.theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch {}
+</script>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="sidebar-open">
+
+<!-- Navigation: bottom tab bar on phones, #topnav on desktop. -->
+<nav id="ribbon" class="tabbar glass" aria-label="Thread">
+  <button class="nav-item" data-go="home" aria-label="Home">
+    <svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></svg><span>Home</span></button>
+  <button class="nav-item" data-go="map" aria-label="Map">
+    <svg viewBox="0 0 24 24"><circle cx="6" cy="7" r="2.4"/><circle cx="18" cy="8.5" r="2.4"/><circle cx="10" cy="18" r="2.4"/><path d="M8.3 7.6c3 .1 5.6.4 7.4.6M16.5 10.6c-1.7 2.2-3.5 4.3-5 5.6M6.6 9.3c.6 2.6 1.4 4.8 2.4 6.5"/></svg><span>Map</span></button>
+  <button class="nav-item" data-go="search" aria-label="Search">
+    <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg><span>Search</span></button>
+  <button class="nav-item" data-go="me" aria-label="Me">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20c1.1-3.7 3.8-5.6 7-5.6s5.9 1.9 7 5.6"/></svg><span>Me</span></button>
+</nav>
+
+<!-- Sidebar -->
+<nav id="sidebar" aria-label="Folders">
+  <div class="side-top">
+    <div class="search">
+      <input id="search" type="search" placeholder="Search" aria-label="Search notes"><kbd>/</kbd>
+    </div>
+    <button class="icon" id="close-sidebar" aria-label="Close sidebar">
+      <svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+    </button>
+  </div>
+  <div class="side-actions">
+    <button class="icon" id="new-note" title="New note (N)" aria-label="New note">
+      <svg viewBox="0 0 16 16"><path d="M9.5 2.5H4.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V5.5z"/><path d="M9.5 2.5v3h3M8 8v3.5M6.25 9.75h3.5"/></svg>
+    </button>
+    <button class="icon" id="new-folder" title="New folder" aria-label="New folder">
+      <svg viewBox="0 0 16 16"><path d="M2.5 4.5a1 1 0 0 1 1-1h3l1.5 1.5h4.5a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1z"/><path d="M8 7.25v3.5M6.25 9h3.5"/></svg>
+    </button>
+    <button class="icon" id="collapse-all" title="Collapse all folders" aria-label="Collapse all folders">
+      <svg viewBox="0 0 16 16"><path d="M5 6.5L8 3.5l3 3M5 12.5l3-3 3 3"/></svg>
+    </button>
+    <span class="spacer"></span>
+    <button class="icon" id="replay" title="Replay how your memory grew" aria-label="Replay growth">
+      <svg viewBox="0 0 16 16"><path d="M2.5 8a5.5 5.5 0 1 0 1.7-4"/><path d="M2.5 2.5v3h3"/></svg>
+    </button>
+    <button class="icon" id="fit" title="Fit the map on screen" aria-label="Fit map">
+      <svg viewBox="0 0 16 16"><path d="M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10"/></svg>
+    </button>
+  </div>
+  <div class="tree" id="tree" role="tree"></div>
+</nav>
+
+<main>
+  <div class="topbar">
+    <button class="icon ghost" id="toggle-sidebar" title="Show or hide the sidebar ([)" aria-label="Toggle sidebar">
+      <svg viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M6.5 3v10"/></svg>
+    </button>
+    <button class="icon ghost" id="back" title="Back (Alt ←, or swipe)" aria-label="Back">
+      <svg viewBox="0 0 16 16"><path d="M10 3.5L5.5 8l4.5 4.5"/></svg></button>
+    <button class="icon ghost" id="forward" title="Forward (Alt →, or swipe)" aria-label="Forward">
+      <svg viewBox="0 0 16 16"><path d="M6 3.5L10.5 8 6 12.5"/></svg></button>
+    <nav class="topnav" id="topnav" aria-label="Thread">
+      <button class="nav-item" data-go="home" aria-label="Home">
+    <svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></svg><span>Home</span></button>
+      <button class="nav-item" data-go="map" aria-label="Map">
+    <svg viewBox="0 0 24 24"><circle cx="6" cy="7" r="2.4"/><circle cx="18" cy="8.5" r="2.4"/><circle cx="10" cy="18" r="2.4"/><path d="M8.3 7.6c3 .1 5.6.4 7.4.6M16.5 10.6c-1.7 2.2-3.5 4.3-5 5.6M6.6 9.3c.6 2.6 1.4 4.8 2.4 6.5"/></svg><span>Map</span></button>
+      <button class="nav-item" data-go="search" aria-label="Search">
+    <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg><span>Search</span></button>
+      <button class="nav-item" data-go="me" aria-label="Me">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20c1.1-3.7 3.8-5.6 7-5.6s5.9 1.9 7 5.6"/></svg><span>Me</span></button>
+    </nav>
+    <div class="tabs" id="tabs" role="tablist"></div>
+    <span class="count" id="count"></span>
+    <h1 class="wordmark">Thread</h1>
+  </div>
+
+  <!-- Home -->
+  <section class="view" id="home-view" hidden>
+    <div id="home"></div>
+  </section>
+
+  <section class="view" id="map-view" hidden>
+    <canvas id="map" role="group" aria-label="Map of your Thread memory"></canvas>
+    <button class="icon recenter" id="recenter" title="Recenter the map" aria-label="Recenter the map">
+      <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="4.5"/><circle cx="8" cy="8" r="1.2"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2"/></svg>
+    </button>
+    <div class="localbar off" id="localbar">
+      <span>Around <b id="local-title"></b></span>
+      <label>Depth <input id="depth" type="range" min="1" max="3" value="1"></label>
+      <button class="text-btn" id="exit-local">Show everything</button>
+    </div>
+    <div class="empty" id="empty" hidden><p>This dot is you. Connect your AI in <b>Settings</b>, and everything it remembers will show up here.</p></div>
+  </section>
+
+  <button class="fab glass" id="fab-new" type="button" aria-label="New note" title="New note (N)">
+    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+
+  <section class="view" id="note-view" hidden>
+    <article id="note">
+      <div class="note-head">
+        <nav class="path" id="note-path" aria-label="Location"></nav>
+        <span class="status" id="note-status"></span>
+        <button class="text-btn" id="show-on-map">Show on map</button>
+        <button class="text-btn" id="edit">Edit</button>
+      </div>
+      <div id="note-body"></div>
+      <textarea id="editor" spellcheck="true" hidden aria-label="Edit note"></textarea>
+      <div id="backlinks"></div>
+    </article>
+  </section>
+
+
+  <section class="view" id="me-view" hidden>
+    <div id="me-page">
+      <header class="me-head">
+        <h1>Me</h1>
+        <span class="status" id="me-status" aria-live="polite"></span>
+      </header>
+      <nav class="me-tabs" role="tablist" aria-label="Me sections">
+        <button role="tab" data-panel="profile">Profile</button>
+        <button role="tab" data-panel="chats">Chats</button>
+        <button role="tab" data-panel="settings">Settings</button>
+        <button role="tab" data-panel="help">Help &amp; Q&amp;A</button>
+      </nav>
+
+      <div class="me-panel" id="panel-profile" role="tabpanel">
+        <!-- Me summary: only filled rows render. -->
+        <div id="me-summary"></div>
+        <div id="profile-edit" hidden>
+        <p class="callout"><b>Your AI reads this page at the start of every chat.</b> Fill in as much or as little as you like.
+          As you talk, your AI also saves what it learns about you (see <a href="#learned" class="jump">What your AI has learned</a>).
+          It's all yours: edit or delete anything, anytime.</p>
+        <section class="card starter" id="starter" hidden>
+          <h2>Pick a starting point</h2>
+          <p class="hint">Two quick taps fill in your goals, answer style, and rules. You can change any of it after.</p>
+          <p class="step">What do you study?</p>
+          <div class="chips" id="starter-majors" role="radiogroup" aria-label="What do you study"></div>
+          <p class="step">What do you use AI for? <span>Pick any</span></p>
+          <div class="chips" id="starter-uses" aria-label="What do you use AI for"></div>
+          <div class="row-btns">
+            <button class="primary" type="button" id="starter-apply" disabled>Fill in my profile</button>
+            <button class="text-btn" type="button" id="starter-skip">I'll fill it in myself</button>
+          </div>
+        </section>
+        <p class="starter-link" id="starter-link" hidden><button class="text-btn" type="button">Start from a template</button></p>
+        <section class="card">
+          <h2>About you</h2>
+          <div class="fields" id="about-fields"></div>
+        </section>
+        <section class="card">
+          <h2>What you're working toward</h2>
+          <p class="hint">Goals help your AI see the bigger picture. One per line.</p>
+          <div class="list-edit" id="goals" data-placeholder="e.g. Get an A in 21-241"></div>
+        </section>
+        <section class="card">
+          <h2>How you like answers</h2>
+          <div class="choices" id="style-fields"></div>
+        </section>
+        <section class="card">
+          <h2>Rules for your AI</h2>
+          <p class="hint">Things your AI should always do (or never do).</p>
+          <div class="list-edit" id="rules" data-placeholder="e.g. Always ask before adding calendar events"></div>
+        </section>
+        <section class="card">
+          <h2>Anything else</h2>
+          <p class="hint">Anything else your AI should know about you.</p>
+          <textarea id="extra" rows="3" placeholder="e.g. I learn best from examples first, then the rule."></textarea>
+        </section>
+        <section class="card" id="learned">
+          <h2>What your AI has learned</h2>
+          <p class="hint">Saved automatically as you chat. Remove anything that's wrong and it's forgotten everywhere.</p>
+          <p class="hint">To learn how you talk, your AI also keeps some of your own messages word for word. They're in
+            <b>What my AI learned → My voice</b> on the map, and you can delete any of them.</p>
+          <ul class="learned" id="learned-list"></ul>
+        </section>
+        </div>
+      </div>
+
+      <div class="me-panel" id="panel-settings" role="tabpanel" hidden>
+        <section class="card" id="setup-guide">
+          <h2>Setup guide</h2>
+          <p class="hint">Skipped something during setup? Everything is here. Each step takes about a minute.</p>
+          <div class="guide" id="guide-rows"></div>
+          <div class="row-btns"><button class="text-btn" type="button" id="setup-again">Run setup again</button></div>
+        </section>
+        <section class="card">
+          <h2>Connect your AI</h2>
+          <div id="mcp-online">
+            <p class="hint">Add Thread as a connector, and your AI can read and save to your memory.</p>
+            <div class="row-btns"><a class="primary" id="add-claude" target="_blank" rel="noopener">Add to Claude</a></div>
+            <div class="copy-row"><code id="mcp-url"></code><button class="text-btn" id="copy-mcp">Copy</button></div>
+            <ol class="steps">
+              <li><b>Claude:</b> press <b>Add to Claude</b>. It opens claude.ai with Thread filled in: press <b>Add</b>, then <b>Connect</b>.
+                On a phone, do it in your browser (the Claude app can't add connectors); Thread then works in the app too.</li>
+              <li><b>ChatGPT</b> (Plus or higher): Settings → turn on <b>Developer mode</b> → add a new app with this address
+                (Authentication: OAuth). Then in each chat, tap <b>+</b> → Developer mode → pick Thread.</li>
+              <li>When it asks, press <b>Continue as you</b> (or sign in with your Thread email and password).</li>
+            </ol>
+          </div>
+          <p class="hint" id="mcp-local" hidden>On this laptop, Claude Code already uses Thread. Once Thread is online, the address to add in the Claude and ChatGPT apps will show up here.</p>
+        </section>
+        <section class="card">
+          <h2>Connected accounts</h2>
+          <div class="conn" id="google-row">
+            <div class="conn-info"><b>Google Calendar</b><span id="google-state">Checking…</span></div>
+            <div class="conn-btns" id="google-btns"></div>
+          </div>
+          <div class="conn">
+            <div class="conn-info"><b>Canvas</b><span id="canvas-state"></span></div>
+            <div class="conn-btns" id="canvas-btns"></div>
+          </div>
+          <p class="hint access-note">What each connection can do: <b>Canvas</b> is read-only (deadlines, and with an
+            access token also syllabi, announcements, pages and assignment details; Thread never submits anything).
+            <b>Google Calendar</b> reads your events and adds ones you ask for.<span id="sealed-note"> Your Canvas token, feed
+            link and Google sign-in are stored encrypted on Thread's server.</span></p>
+          <form id="feed-form" class="canvas-form" hidden>
+            <ol class="steps" id="feed-steps">
+              <li>Open <a href="https://canvas.cmu.edu/calendar" target="_blank" rel="noopener" id="feed-open"><b>Canvas Calendar</b></a>.</li>
+              <li>Press <b>Calendar Feed</b> (bottom right on a computer; on a phone, scroll to the bottom) and copy the link.</li>
+              <li>Paste it here.</li>
+            </ol>
+            <label>Calendar Feed link<input type="url" id="feed-url" autocomplete="off" spellcheck="false"
+              placeholder="https://canvas.cmu.edu/feeds/calendars/…" required></label>
+            <p class="form-msg" id="feed-msg" role="alert"></p>
+            <div class="row-btns">
+              <button class="primary" type="submit">Bring in deadlines</button>
+              <button class="text-btn" type="button" id="feed-cancel">Cancel</button>
+            </div>
+            <p class="hint">Thread only reads your deadlines. The calendar feed doesn't say what you've already
+              submitted; for that and syllabus files, use <button type="button" class="link" id="feed-advanced">an access token (Advanced)</button>.</p>
+          </form>
+          <form id="canvas-form" class="canvas-form" hidden>
+            <ol class="steps">
+              <li>In Canvas, open <b>Account → Settings</b>.</li>
+              <li>Under Approved Integrations, press <b>+ New Access Token</b>. Name it "Thread" and leave the date blank.</li>
+              <li>Copy the token and paste it here.</li>
+            </ol>
+            <label>Canvas access token<input type="password" id="canvas-token" autocomplete="off" spellcheck="false" required></label>
+            <p class="form-msg" id="canvas-msg" role="alert"></p>
+            <div class="row-btns">
+              <button class="primary" type="submit">Connect Canvas</button>
+              <button class="text-btn" type="button" id="canvas-cancel">Cancel</button>
+            </div>
+            <p class="hint">Thread only reads your classes and due dates. It never submits or changes anything in Canvas.</p>
+          </form>
+        </section>
+        <section class="card">
+          <h2>Account</h2>
+          <div id="account-online">
+            <p class="signed-in">Signed in as <b id="account-email"></b> · <a class="link" href="/signout">Sign out</a></p>
+            <form id="password-form" autocomplete="on">
+              <input type="text" name="username" id="pw-username" autocomplete="username" hidden>
+              <label>Current password<input type="password" id="pw-current" autocomplete="current-password" required></label>
+              <label>New password<input type="password" id="pw-new" autocomplete="new-password" minlength="12" required>
+                <span class="hint">At least 12 characters.</span></label>
+              <label>Type it again<input type="password" id="pw-again" autocomplete="new-password" minlength="12" required></label>
+              <p class="form-msg" id="pw-msg" role="alert"></p>
+              <div class="row-btns">
+                <button class="primary" type="submit">Change password</button>
+                <a class="text-btn" href="/signout">Sign out</a>
+              </div>
+              <p class="hint">Changing it signs out your other browsers and connected AI apps, and turns off your chat-backup key
+                (make a new one in Me → Chats). You stay signed in here.</p>
+            </form>
+          </div>
+          <p class="hint" id="account-local" hidden>This is the version on your own laptop, so there's no password: it only opens on this computer.
+            The online version uses a password you can change here.</p>
+        </section>
+        <section class="card online-only" id="twofa-card">
+          <h2>Two-step sign-in</h2>
+          <div class="conn">
+            <div class="conn-info"><b>Authenticator app</b><span id="twofa-state">Off</span></div>
+            <div class="conn-btns" id="twofa-btns"></div>
+          </div>
+          <div class="row-btns twofa-more" id="twofa-more" hidden></div>
+          <p class="hint">After your password, Thread asks for a 6-digit code from an app on your phone (Apple Passwords,
+            Google Authenticator, 1Password). Someone who learns your password still can't get in.</p>
+        </section>
+        <section class="card online-only" id="signins-card">
+          <h2>Recent sign-ins</h2>
+          <ul class="signins" id="signins"></ul>
+          <div class="row-btns"><button class="text-btn" type="button" id="signout-others">Sign out everywhere else</button></div>
+          <p class="hint">Don't recognise one? Change your password, then sign out everywhere else. That also signs out
+            Claude and ChatGPT until you reconnect them. Thread keeps the browser and the time, never where you were.</p>
+        </section>
+        <section class="card">
+          <h2>What Thread saves</h2>
+          <div class="radio-cards" id="saving">
+            <label><input type="radio" name="saving" value="everything"><span><b>Everything</b>
+              Your AI saves what matters from every chat as you go, so every AI you use remembers it.</span></label>
+            <label><input type="radio" name="saving" value="important"><span><b>Only important things</b>
+              Deadlines, goals, decisions, and things you'd want remembered.</span></label>
+            <label><input type="radio" name="saving" value="ask"><span><b>Only when I say</b>
+              Nothing is saved unless you tell your AI to.</span></label>
+          </div>
+        </section>
+        <section class="card">
+          <h2>Privacy</h2>
+          <div class="radio-cards" id="privacy">
+            <label><input type="radio" name="privacy" value="strict"><span><b>Strict</b>
+              Your AI won't save money, health, family, grades, or other people's names unless you ask it to.</span></label>
+            <label><input type="radio" name="privacy" value="light"><span><b>Light</b>
+              Your AI can save anything lasting that helps it know you. Passwords, keys, and card numbers are never saved.</span></label>
+          </div>
+        </section>
+        <section class="card">
+          <h2>Appearance</h2>
+          <div class="seg" id="theme" role="radiogroup" aria-label="Theme">
+            <button data-theme="system" role="radio">System</button>
+            <button data-theme="light" role="radio">Light</button>
+            <button data-theme="dark" role="radio">Dark</button>
+          </div>
+        </section>
+        <section class="card">
+          <h2>Your data</h2>
+          <p class="hint">Your memory is plain notes (Markdown files) that you own. Download them anytime and open them in Obsidian, Notion, or any app.</p>
+          <a class="text-btn" href="/api/export" id="export-link" download>Download my memory (.zip)</a>
+        </section>
+        <section class="card" id="feedback-card">
+          <h2>Report a bug or idea</h2>
+          <p class="hint">Goes straight to the person building Thread. Tell us what you did, what you expected, and what happened.
+            You can also just tell your AI ("report a Thread bug: …") and it will send it for you.</p>
+          <form id="feedback-form" class="feedback-form">
+            <label class="sr-only" for="feedback-text">Your report</label>
+            <textarea id="feedback-text" rows="5" required
+              placeholder="e.g. I tapped New note on my phone, pressed cancel, and the bottom bar disappeared."></textarea>
+            <p class="form-msg" id="feedback-msg" role="status"></p>
+            <div class="row-btns">
+              <button class="primary" type="submit">Send</button>
+            </div>
+            <p class="hint">We'll include your screen size and browser so we can reproduce it, never your notes.</p>
+          </form>
+        </section>
+      </div>
+
+      <div class="me-panel" id="panel-chats" role="tabpanel" hidden>
+        <p class="callout"><b>Deleted a chat by accident? It's still here.</b> Thread keeps a copy of your ChatGPT and
+          Claude chats for <span id="chat-days">10</span> days after it first saves them, then deletes it for good.
+          Your AI can search them too.</p>
+        <p class="hint" id="chats-unavailable" hidden></p>
+        <section class="card" id="chat-setup" hidden>
+          <h2>Turn on chat backup</h2>
+          <p class="hint">A small Chrome extension copies each chat as you use chatgpt.com or claude.ai on a computer.
+            It can't see the phone apps, and it never sees your passwords.</p>
+          <ol class="steps">
+            <li>Install the <b>Thread Backup</b> extension in Chrome.</li>
+            <li>Press <b>Make my backup key</b> and copy it.</li>
+            <li>Open the extension, paste your Thread address and the key, and press Save.</li>
+          </ol>
+          <div class="row-btns"><button class="primary" type="button" id="make-key">Make my backup key</button></div>
+          <div class="key-box" id="key-box" hidden>
+            <p class="hint">Copy it now. For safety, Thread only shows it once. Making a new key turns the old one off.</p>
+            <div class="copy-row"><code id="backup-key"></code><button class="text-btn" id="copy-key">Copy</button></div>
+            <div class="copy-row"><code id="backup-url"></code><button class="text-btn" id="copy-url">Copy</button></div>
+          </div>
+        </section>
+        <div id="chat-list"></div>
+        <article id="chat-read" hidden>
+          <div class="row-btns chat-actions">
+            <button class="text-btn" type="button" id="chat-back">← All chats</button>
+            <button class="text-btn" type="button" id="chat-copy">Copy all</button>
+            <a class="text-btn" id="chat-download" download>Download</a>
+            <a class="text-btn" id="chat-open" target="_blank" rel="noopener">Open original</a>
+          </div>
+          <h2 id="chat-title"></h2>
+          <p class="hint" id="chat-meta"></p>
+          <div id="chat-messages"></div>
+        </article>
+      </div>
+
+      <div class="me-panel" id="panel-help" role="tabpanel" hidden>
+        <div class="faq" id="faq"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="tip" id="tip"></div>
+<div class="menu" id="menu" hidden role="menu"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- First-run setup -->
+<div class="setup" id="setup" hidden role="dialog" aria-modal="true" aria-labelledby="setup-title">
+  <div class="setup-sheet">
+    <div class="setup-top">
+      <span class="setup-top-gap"></span>
+      <span aria-hidden="true"></span>
+      <span class="setup-count" id="setup-count" aria-live="polite"></span>
+      <button class="icon setup-close" id="setup-close" type="button" aria-label="Close setup">
+        <svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+      </button>
+    </div>
+    <div class="setup-body" id="setup-body"></div>
+    <div class="setup-foot">
+      <button class="text-btn setup-skip" id="setup-skip" type="button">Set up later</button>
+      <div class="setup-nav">
+        <button class="text-btn setup-back" id="setup-back" type="button"><svg viewBox="0 0 16 16"><path d="M10 3.5L5.5 8l4.5 4.5"/></svg>Back</button>
+        <button class="primary setup-next" id="setup-next" type="button">Continue</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Account security sheet -->
+<div class="setup" id="secure" hidden role="dialog" aria-modal="true" aria-labelledby="sec-title">
+  <div class="setup-sheet">
+    <div class="setup-top">
+      <span class="setup-top-gap"></span>
+      <span aria-hidden="true"></span>
+      <span class="setup-count" id="sec-count" aria-live="polite"></span>
+      <button class="icon setup-close" id="sec-close" type="button" aria-label="Close">
+        <svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+      </button>
+    </div>
+    <form class="setup-body" id="sec-body" novalidate></form>
+    <div class="setup-foot">
+      <div class="setup-nav">
+        <button class="text-btn setup-back" id="sec-back" type="button"><svg viewBox="0 0 16 16"><path d="M10 3.5L5.5 8l4.5 4.5"/></svg>Back</button>
+        <button class="primary setup-next" id="sec-next" type="button">Continue</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/static/d3.min.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

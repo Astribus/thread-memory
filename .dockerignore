@@ -1,0 +1,16 @@
+.git
+.venv
+__pycache__
+.pytest_cache
+tests
+docs
+scripts
+*.md
+!README.md
+client_secret*.json
+google-client.json
+google-token.json
+auth.json
+.env*
+fly.toml
+Dockerfile
