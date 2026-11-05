@@ -1,19 +1,61 @@
-# Thread
+<!-- mcp-name: io.github.astribus/thread-memory -->
+<p align="center">
+  <img src="brand/thread-logo-400.png" width="96" alt="Thread logo">
+</p>
 
-A personal memory for students that any AI can read and write. Notes are plain Markdown files, shown as an
-Obsidian-style map, and exposed to Claude and ChatGPT through an MCP server, alongside the student's Canvas
-deadlines and Google Calendar.
+<h1 align="center">Thread</h1>
 
-> **Status:** personal project, not maintained as a product. The code works and is tested; there is no hosted
-> service to sign up for.
+<p align="center">
+  <b>A memory any AI can read and write, kept as plain Markdown files you own.</b><br>
+  An MCP server for Claude, ChatGPT and Cursor, with an Obsidian-style map and tools for students' Canvas deadlines and Google Calendar.
+</p>
+
+<p align="center">
+  <a href="https://github.com/Astribus/thread-memory/actions/workflows/tests.yml"><img src="https://github.com/Astribus/thread-memory/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license"></a>
+  <img src="https://img.shields.io/badge/python-3.12+-blue" alt="Python 3.12+">
+  <img src="https://img.shields.io/badge/MCP-27%20tools-black" alt="27 MCP tools">
+</p>
 
 ![Thread's map view, with synthetic notes](docs/images/map-desktop.png)
+
+## Try it in 30 seconds
+
+You need [uv](https://docs.astral.sh/uv/getting-started/installation/). Nothing else to install or sign up for.
+
+**Claude Code**
+```bash
+claude mcp add thread -- uvx --from git+https://github.com/Astribus/thread-memory thread
+```
+
+**Claude Desktop, Cursor, or any MCP client** (add to the client's MCP config file):
+```json
+{
+  "mcpServers": {
+    "thread": {
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/Astribus/thread-memory", "thread"]
+    }
+  }
+}
+```
+
+Then tell the AI something like *"remember that my stats exam is on Dec 10"* and, in a new chat,
+*"what do you know about my exams?"*. Notes land in `~/thread-brain` as Markdown (set `THREAD_BRAIN_DIR` to
+use another folder, e.g. an Obsidian vault). To see the map:
+
+```bash
+uvx --from git+https://github.com/Astribus/thread-memory thread-home   # http://127.0.0.1:8765
+```
+
+ChatGPT and claude.ai connect to remote servers only. For those, [self-host the online server](#self-host-the-online-server).
 
 ## What it does
 
 - **Memory over MCP.** 27 tools (`remember`, `search_memory`, `read_note`, `catch_up`, `log_chat`, `whats_due`,
   `read_syllabus`, `add_to_calendar`, ...) let an AI save and recall notes in the signed-in user's own folder.
   Each tool carries read-only/destructive annotations.
+- **Plain files.** One Markdown note per topic with `[[wikilinks]]`, readable and editable in any editor or Obsidian.
 - **The map.** Every note is a dot, every `[[wikilink]]` a thread. A d3-force simulation matched to Obsidian's
   graph view, drawn on a single HTML canvas; it holds 60 fps while zooming and dragging at 3,000 notes under a 4×
   CPU throttle.
@@ -24,11 +66,23 @@ deadlines and Google Calendar.
   AI can answer the way they like.
 - **Chat backup.** An optional Chrome extension keeps the last 10 days of ChatGPT/Claude chats, searchable from
   the AI.
-- **Accounts.** Invite-only sign-up, OAuth 2.1 for AI apps, optional authenticator-app two-step sign-in.
+- **Accounts (online server).** Invite-only sign-up, OAuth 2.1 for AI apps, optional authenticator-app two-step sign-in.
 
 | Map on a phone (dark) | |
 |---|---|
 | <img src="docs/images/map-iphone-dark.png" width="260" alt="Thread map on an iPhone in dark mode"> | The phone layout is portrait-only: a bottom tab bar (Home · Map · Search · Me), pinch to zoom, drag a dot to pull its neighbours. |
+
+## How it compares
+
+- **Built-in ChatGPT / Claude memory:** locked to one app, and you can't see the whole thing as files. Thread works
+  with any MCP client and is just a folder.
+- **[Basic Memory](https://github.com/basicmachines-co/basic-memory):** the closest project (Markdown notes over
+  MCP, works with Obsidian). It's a general-purpose knowledge base under AGPL-3.0. Thread is MIT and adds
+  student tools (Canvas, syllabus, calendar), a built-in map, and a multi-account server with OAuth for
+  ChatGPT/claude.ai.
+
+> **Status:** a personal project that works and is tested (280 tests, CI on every push). Issues and small pull
+> requests are welcome; it's maintained on a best-effort basis.
 
 ## Architecture
 
@@ -80,7 +134,7 @@ Python 3.12 · [MCP Python SDK](https://github.com/modelcontextprotocol/python-s
 httpx · cryptography (Fernet) · segno (QR codes) · pypdf · Google API client · d3 7.9 (force simulation, zoom) ·
 HTML Canvas 2D · pytest · Playwright (visual checks) · Docker · Fly.io · uv.
 
-## Run it locally
+## Develop
 
 Requires [uv](https://docs.astral.sh/uv/).
 
@@ -106,7 +160,7 @@ uv run python scale-lab/gen.py /tmp/synth 300
 uv run python scale-lab/serve.py /tmp/synth 8800
 ```
 
-## Deploy
+## Self-host the online server
 
 The online server runs as one Fly.io machine with a 1 GB volume (about $2–3 a month at the time of writing).
 See [docs/DEPLOY.md](docs/DEPLOY.md). It refuses to start without `THREAD_SECRET_KEY`; [.env.example](.env.example)
@@ -152,6 +206,11 @@ A memory layer that depends on the model choosing to call it loses to the host a
 happen without the model's cooperation (a browser extension, an export import, or owning the chat surface), and
 on phones, where most student chats happen, the native apps allow none of those. That's why this stayed a
 project.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Bugs and ideas: [open an issue](https://github.com/Astribus/thread-memory/issues/new/choose).
+Security problems: report privately, see [SECURITY.md](SECURITY.md).
 
 ## License
 

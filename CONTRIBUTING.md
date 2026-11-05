@@ -1,6 +1,6 @@
 # Contributing
 
-Thread is a personal project and isn't actively maintained, but issues and small pull requests are welcome.
+Thread is a personal project maintained on a best-effort basis. Issues and small pull requests are welcome.
 
 1. `uv sync`
 2. Make the change, with a test where it makes sense.

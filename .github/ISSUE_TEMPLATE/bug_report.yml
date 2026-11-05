@@ -1,0 +1,26 @@
+name: Bug report
+description: Something doesn't work
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: dropdown
+    id: client
+    attributes:
+      label: AI app
+      options: [Claude Code, Claude Desktop, claude.ai, ChatGPT, Cursor, Other]
+  - type: input
+    id: version
+    attributes:
+      label: Thread version or commit
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or error text
+      description: Remove tokens, emails and note contents first.
+      render: text

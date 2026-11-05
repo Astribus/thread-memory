@@ -1,9 +1,20 @@
 [project]
-name = "thread"
+name = "thread-memory"
 version = "0.1.0"
-description = "Add your description here"
+description = "A memory any AI can read and write: Markdown notes over MCP, an Obsidian-style map, Canvas LMS and Google Calendar for students."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
     { name = "Yue Chen" }
+]
+keywords = ["mcp", "model-context-protocol", "memory", "claude", "chatgpt", "obsidian", "markdown", "canvas-lms", "students"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Education",
 ]
 requires-python = ">=3.12"
 dependencies = [
@@ -17,6 +28,11 @@ dependencies = [
     "starlette>=1.7.0",
     "uvicorn>=0.54.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Astribus/thread-memory"
+Issues = "https://github.com/Astribus/thread-memory/issues"
+Changelog = "https://github.com/Astribus/thread-memory/blob/main/CHANGELOG.md"
 
 [project.scripts]
 thread = "thread:main"
@@ -33,3 +49,6 @@ build-backend = "uv_build"
 dev = [
     "pytest>=9.1.1",
 ]
+
+[tool.uv.build-backend]
+module-name = "thread"
